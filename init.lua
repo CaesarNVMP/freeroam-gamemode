@@ -59,6 +59,10 @@ function SERVER:OnPlayerLeave(player)
 	SERVER.Inventory:SaveUserInventory( player );
 end
 
+function SERVER:SendPlayerToDefaultSpawn( player )
+	player:SetExteriorCell( core.WORLDSPACE_WASTELANDNV, -17, 0,  -67833.554688, 3067.737793, 8355.847656 );
+end
+
 function SERVER:SendPlayerToSpawn( player )
 	-- Send to faction spawn or default spawn.
 	local fid        = player:GetDataNumber("ForumID");
@@ -66,7 +70,7 @@ function SERVER:SendPlayerToSpawn( player )
 	
 	-- Send to goodsprings.
 	if (faction_id == 0) then
-		player:SetExteriorCell( core.WORLDSPACE_WASTELANDNV, -17, 0,  -67833.554688, 3067.737793, 8355.847656 );
+		self:SendPlayerToDefaultSpawn( player );
 		return;
 	end
 
@@ -76,6 +80,7 @@ function SERVER:SendPlayerToSpawn( player )
 
 	if (base == nil) then
 		warn("No bases found for faction, sending to default spawn.");
+		self:SendPlayerToDefaultSpawn( player );
 		return;
 	end
 
@@ -137,7 +142,7 @@ function SERVER:OnPlayerSpawn(player)
 			send_to_spawn = true;
 		end
 	else	
-		if (cellid:len() == 0) then
+		if (cellid == nil or cellid:len() == 0) then
 			warn("Player interior cell is blank.");
 			send_to_spawn = true;
 		end

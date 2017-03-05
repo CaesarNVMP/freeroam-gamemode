@@ -19,7 +19,7 @@ function inventory_manager:LoadUserKit(player, forced_faction_id)
 	local current_time = os.time();
 
 	if (self._kit_cache[ faction_id ] ~= nil) then
-		kit_data = self._kit_cache;
+		kit_data = self._kit_cache[ faction_id ];
 		
 		-- Expire kit cache after 5 minutes
 		if ( (current_time - kit_data.time) < (60 * 5) ) then
