@@ -135,13 +135,7 @@ function SERVER:OnPlayerSpawn(player)
 
 	-- Make sure the exterior/interior data is valid, else
 	-- send them to spawn.
-	if (is_in_exterior) then
-
-		if (exterior_x == 0 and exterior_y == 0) then
-			warn("Player 2D exterior coordinates are zero.");
-			send_to_spawn = true;
-		end
-	else	
+	if (not is_in_exterior) then
 		if (cellid == nil or cellid:len() == 0) then
 			warn("Player interior cell is blank.");
 			send_to_spawn = true;
