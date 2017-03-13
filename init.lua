@@ -38,17 +38,36 @@ function SERVER:Init()
 	SERVER.Inventory:Load( SERVER.Database );
 end
 
---function SERVER:GetStartingBackpack()
---	local result = {};
---	result[ NVItemDB:GetItem( 0x0001cbdc ) ] = { equipped = true, count = 1   };  -- Vault-tec uniform.
---	result[ NVItemDB:GetItem( 0x000e3778 ) ] = { equipped = true, count = 1   };  -- 9mm pistol
---	result[ NVItemDB:GetItem( 0x0008ed03 ) ] = { equipped = true, count = 100 };  -- Standard 9mm round
---	result[ NVItemDB:GetItem( 0x00004334 ) ] = { equipped = true, count = 1   };  -- Knife
---	return result;
---end
-
 function SERVER:OnPlayerJoin(player)
+	-- Send base list.
 	SERVER.Bases:SendBaseList( player );
+
+	-- Send welcome message.
+	local welcome_message;
+	local minutes = player:GetDataNumber("game_minutes");
+	local game_time = nil;
+	
+	if minutes ~= nil and minutes > 0 then
+		welcome_message = "Welcome back, ";
+		
+		if (minutes < 60) then
+			game_time = math.round( minutes ) .. " minutes";
+		elseif (minutes < 60 * 24) then
+			game_time = math.round( minutes / 60, 2) .. " hours";
+		else 
+			game_time = math.round( minutes  / 60 / 24, 2) .. " days";
+		end
+	else
+		welcome_message = "Welcome to NV:MP, ";
+		game_time = "0 hours";
+	end
+
+
+	player:SendSystemMessage("--" .. welcome_message .. player:GetName() .. "!");
+
+	if game_time ~= nil then
+		player:SendSystemMessage("---Current gametime is " .. game_time);
+	end
 end
 
 function SERVER:OnPlayerLeave(player)
@@ -74,8 +93,8 @@ function SERVER:SendPlayerToSpawn( player )
 		return;
 	end
 
+	-- Load faction spawn point
 	local base = SERVER.Bases:GetFactionSpawnBase(faction_id);
-
 	print("Loading faction base spawn point...");
 
 	if (base == nil) then

@@ -58,7 +58,6 @@ function Base:UpdateNodes(hard)
 		faction =
 		{
 			name    = "Unowned",
-			tagline = "As a faction officer, use /startcapture",
 			banner  = "",
 
 			r = 255,
@@ -71,7 +70,7 @@ function Base:UpdateNodes(hard)
 	local nametag = self:MakeNode(node_population);
 	nametag.type = "zone"; -- Signify this node as a base zone point.
 	nametag.label = self:GetDisplayName();
-	nametag.origin_tag = self:GetDisplayName() .. " owned by " .. faction.name;
+
 	nametag.worldspace = w;
 	nametag.x = x;
 	nametag.y = y;
@@ -92,11 +91,16 @@ function Base:UpdateNodes(hard)
 
 	-- Node for current faction owner.
 	local faction_tagline = self:MakeNode(node_population);
-	faction_tagline.label = "";
-	faction_tagline.offset = 20;
+	faction_tagline.offset = 25;
 	faction_tagline.scale = 0.8;
 	faction_tagline.worldspace, faction_tagline.x, faction_tagline.y, faction_tagline.z = w, x, y, z;
-	
+
+	if (self:GetCanCapture()) then
+		faction_tagline.label = ""; --"As a faction officer, use /startcapture";
+	else 
+		faction_tagline.label = "Capture Locked";
+	end
+
 	-- At the end compare the current nodes to the new node list.
 	for i,v in pairs(self._nodes) do
 		if (node_population[i] == nil or hard) then
@@ -166,6 +170,17 @@ function Base:GetDisplayName()
 end
 function Base:SetDisplayName(name)
 	self:_Set("display_name", string.format("%s", name));
+end
+
+----------------------------------------------------
+--[  Base:SetCanCapture / GetCanCapture            ]
+--   Modifies the base capture flags.
+----------------------------------------------------
+function Base:GetCanCapture()
+	return tonumber( self._data.capture_locked ) ~= 1;
+end
+function Base:SetCanCapture(flag)
+	self:_Set("capture_locked", tonumber(not(flag)));
 end
 
 ----------------------------------------------------
@@ -355,7 +370,7 @@ end
 --   data that has either been defaulted, or 
 --   loaded from a source.
 -----------------------------------------------------
-function Base:Load(database, data_rows)
+function Base:Load(database, data_rows, silent)
 	-- Import the data rows.
 	for i,v in pairs(data_rows) do
 		self._data[i] = v;
@@ -364,7 +379,11 @@ function Base:Load(database, data_rows)
 	-- live data updates.
 	self._database = database;
 	self:UpdateNodes(true);
-	self:BroadcastAllAddNodes();
+
+	-- Dont broadcast when silent.
+	if silent == nil and silent ~= true then
+		self:BroadcastAllAddNodes();
+	end
 end
 
 function Base:Unload()

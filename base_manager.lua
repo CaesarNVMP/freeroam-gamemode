@@ -5,7 +5,7 @@ local base_manager =
 };
 
 local core = require("util/core");
-local FactionBase = require("gamemodes/freeroam/faction_base");
+local FactionBase = require("gamemodes/freeroam/class_base");
 
 function base_manager:GetBaseList()
 	self:Dump();
