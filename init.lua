@@ -18,6 +18,14 @@ SERVER.Database  = nil;
 SERVER.DBInfo    = nil;
 SERVER.Inventory = nil;
 
+local default_spawns =
+{
+	{ worldspace = core.WORLDSPACE_WASTELANDNV, world_x = -17, world_y  = 0,   x = -67833.554688, y = 3067.737793,   z = 8355.847656 }, -- goodsprings
+	{ worldspace = core.WORLDSPACE_WASTELANDNV, world_x = -15, world_y  = -5,  x = -61320.882813, y = -18883.658203, z = 6363.849121 },  -- goodsprings water pump
+	{ worldspace = core.WORLDSPACE_WASTELANDNV, world_x = -16, world_y  = -13, x = -63302.632813, y = -53211.367188, z = 5792.553711 },  -- primm
+	{ worldspace = core.WORLDSPACE_WASTELANDNV, world_x = -8,  world_y  = -9,  x = -31001.570313, y = -33896.113281, z = 6484.462402 }  -- ncr correnctional
+};
+
 function SERVER:Init()
 	SERVER.DBInfo = require("gamemodes/freeroam/database_config"); -- See database_config.lua.example
 	SERVER.Database = SERVER:CreateDatabase();
@@ -78,8 +86,18 @@ function SERVER:OnPlayerLeave(player)
 	SERVER.Inventory:SaveUserInventory( player );
 end
 
-function SERVER:SendPlayerToDefaultSpawn( player )
-	player:SetExteriorCell( core.WORLDSPACE_WASTELANDNV, -17, 0,  -67833.554688, 3067.737793, 8355.847656 );
+function SERVER:SendPlayerToDefaultSpawn( player, force_gs )
+	print(player:GetName() .. " is being sent to a newbie spawn.");
+
+	local spawn;
+	
+	if (force_gs ~= nil) then
+		spawn = default_spawns[1];
+	else
+		spawn = default_spawns[ math.random(1, table.length( default_spawns)) ];
+	end
+
+	player:SetExteriorCell( spawn.worldspace, spawn.world_x, spawn.world_y, spawn.x, spawn.y, spawn.z );
 end
 
 function SERVER:SendPlayerToSpawn( player )
@@ -121,14 +139,6 @@ function SERVER:OnPlayerRequestSpawn(player)
 	-- Load temporary backpack they used on the server.
 		-- if this is their first load, or they were dead (bug, TODO), load the starting backpack.
 	SERVER.Inventory:LoadUserKit( player );
-
-	--for k, v in pairs( server_backpack ) do
-	--	player:GiveItem( k, v["count"] ); -- , v["health"] -- TODO
-	--
-	--	if (v["equipped"]) then
-	--		player:EquipItem( k );
-	--	end
-	--end
 
 	self:SendPlayerToSpawn( player );
 end
